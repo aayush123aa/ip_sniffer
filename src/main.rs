@@ -1,11 +1,62 @@
+use std::env;
+use std::net::IpAddr;
+use std::str::FromStr;
+
+
+
+struct Arguments {
+    flag: String,
+    ipaddr: IpAddr,
+    threads: u16,
+}
+
+impl Arguments {
+    fn new(args: &[String]) -> Result<Arguments, &'static str> {
+        if args.len() < 2 {
+            return Err("not enough arguements");
+        }
+        else if args.len() > 4 {
+            return Err("too many argumenets");
+        }
+
+        let f = args[1].clone();
+        if let Ok(ipddr) = IpAddr::from_str(&f) {
+            return Ok(Arguments { flag: String::from(""), ipaddr, threads: 4});
+        } else {
+            let flag = args[1].clone();
+            if flag.contains("h") || flag.contains("-help" ) && args.len() == 2 {
+                println!("Usagge: -j to select how many threads you want \r\n -h or -help to show this help message");
+                return Err("help");
+            } else if flag.contains("-h") || flag.contains("-help") {
+                return Err("too many arguements");
+            } else if flag.contains("-j") {
+                let ipaddr = match IpAddr::from_str(&args[3]) {
+                    Ok(s) => s,
+                    Err(_) => return Err("not a valid IPADDR; must be IPv4 or IPv6")
+                };
+                let threads = match args[2].parse::<u16>() {
+                    Ok(s) => s,
+                    Err(_) => return Err("failed to parse thread number")
+                };
+                return Ok(Arguments{threads, flag, ipaddr});
+                } else {
+                    return Err("invalid syntax");
+            }
+
+            }
+
+        }
+        }
+    }
+}
+
 fn main() {
-    let x:i32 = 2;
-    let y:i32 = 4;
+    let args: Vec<String> = env::args().collect();
 
-    println!("the number is {add(x,y)}");
+    let program = args[0].clone();
+    let arguements = Arguments::new(&args).unwrap_or_else();
+    
 }
 
-fn add(a:i32,b:i32)->i32
-{
-    a+b
-}
+
+
